@@ -57,7 +57,7 @@ fex_t* scanArchive(const char* file, bool (*accept)(const char*), char (&buffer)
         strncpy(buffer, fex_name(fe), sizeof buffer);
         buffer[sizeof buffer - 1] = '\0';
 
-        utilStripDoubleExtension(buffer, buffer);
+        utilStripDoubleExtension(buffer, buffer, sizeof(buffer));
 
         if (accept(buffer)) {
             found = true;
@@ -159,9 +159,9 @@ IMAGE_TYPE utilFindType(const char* file) {
     return utilFindType(file, buffer);
 }
 
-void utilStripDoubleExtension(const char* file, char* buffer) {
+void utilStripDoubleExtension(const char* file, char* buffer, size_t len) {
     if (buffer != file)  // allows conversion in place
-        strncpy(buffer, file, strlen(file));
+        strncpy(buffer, file, len);
 
     if (utilIsGzipFile(file)) {
         char* p = strrchr(buffer, '.');

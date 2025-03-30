@@ -1775,7 +1775,7 @@ int main(int argc, char** argv)
     if (optind < argc) {
         char* szFile = argv[optind];
 
-        utilStripDoubleExtension(szFile, filename);
+        utilStripDoubleExtension(szFile, filename, sizeof(filename));
         char* p = strrchr(filename, '.');
 
         if (p)
