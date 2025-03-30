@@ -14,12 +14,6 @@
 #define write _write
 #define strdup _strdup
 
-#if __STDC_WANT_SECURE_LIB__
-#define snprintf sprintf_s
-#define strncpy(a,b,c) strcpy_s(a,c,b)
-#define strncat(a,b,c) strcat_s(a,c,b)
-#endif
-
 #else  // !defined(_WIN32)
 
 #include <netdb.h>
@@ -53,6 +47,12 @@
 #include "core/gba/gbaGlobals.h"
 #include "core/gba/gbaRemote.h"
 #include "core/gba/internal/gbaBreakpoint.h"
+
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
 
 extern int emulating;
 extern void CPUUpdateCPSR();
