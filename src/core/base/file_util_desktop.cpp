@@ -16,6 +16,12 @@
 #define strcasecmp _stricmp
 #endif  // defined(_MSC_VER)
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #define MAX_CART_SIZE 0x8000000  // 128MB
 
 namespace {

@@ -41,6 +41,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WBUF_SIZE BUF_SIZE * sizeof(wchar_t)
 #define MSG_SIZE  256
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 const char* version    = "0.3";
 
 const char* msg_prefix = "bin2c: ";

@@ -20,6 +20,12 @@
 #define stat _stat
 #define mkdir(X,Y) (_mkdir(X))
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 // from: https://www.linuxquestions.org/questions/programming-9/porting-to-win32-429334/
 #ifndef S_ISDIR
     #define S_ISDIR(mode)  (((mode) & _S_IFMT) == _S_IFDIR)

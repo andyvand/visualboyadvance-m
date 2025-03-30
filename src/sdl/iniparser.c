@@ -11,6 +11,12 @@
 
 #include <ctype.h>
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 /*---------------------------- Defines -------------------------------------*/
 #define ASCIILINESZ (1024)
 #define INI_INVALID_KEY ((char *)-1)

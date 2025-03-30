@@ -16,6 +16,10 @@
 #include "wx/config/option-proxy.h"
 #include "wx/wxvbam.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define vsnprintf vsprintf_s
+#endif
+
 // These should probably be in vbamcore
 int systemVerbose;
 int systemFrameSkip;

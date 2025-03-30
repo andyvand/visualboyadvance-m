@@ -4,6 +4,12 @@
 
 #include "core/gb/gbGlobals.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 typedef struct {
     uint8_t mask;
     uint8_t value;

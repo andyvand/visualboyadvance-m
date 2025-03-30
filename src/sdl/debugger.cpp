@@ -37,6 +37,12 @@ extern void sdlReadState(int num);
 
 extern struct EmulatedSystem emulator;
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #define debuggerReadMemory(addr) \
     READ32LE((&map[(addr) >> 24].address[(addr)&map[(addr) >> 24].mask]))
 

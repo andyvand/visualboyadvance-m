@@ -58,6 +58,12 @@
 #include "wx/wayland.h"
 #endif
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 // The program icon, in case it's missing from .xrc (MSW gets it from .rc file)
 #if !defined(__WXMSW__) && !defined(__WXPM__)
 // ImageMagick makes the name wxvbam, but wx expects wxvbam_xpm

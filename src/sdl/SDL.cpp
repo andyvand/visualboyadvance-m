@@ -69,6 +69,12 @@
 
 #define strdup _strdup
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #endif  // defined(_WIN32)
 
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)

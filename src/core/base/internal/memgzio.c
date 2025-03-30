@@ -20,6 +20,12 @@
 
 #include "core/base/internal/memgzio.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #ifndef local
 #define local static
 #endif

@@ -19,6 +19,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 /** Maximum value size for integers and doubles. */
 #define MAXVALSZ 1024
 
