@@ -56,6 +56,10 @@
 #include <windows.h>
 #endif
 
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
+
 namespace {
 
 double GetFilterScale() {
