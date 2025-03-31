@@ -542,10 +542,10 @@ static void sdlOpenGLVideoResize()
     textureSize = (int)pow(2.0f, n);
 
 #if CONFIG_16BIT
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB5, textureSize, textureSize, 0,
-                 GL_BGR, GL_UNSIGNED_SHORT_5_6_5, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
 #else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSize, textureSize, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
         GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 #endif
 
