@@ -541,13 +541,17 @@ static void sdlOpenGLVideoResize()
 
     textureSize = (int)pow(2.0f, n);
 
-#if CONFIG_16BIT
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
-                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
-#else
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
-        GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-#endif
+    if (systemColorDepth == 16)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+                     GL_RGB, GL_UNSIGNED_SHORT_5_6_5, NULL);
+    } else if (systemColorDepth == 24) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+                     GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    } else {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSize, textureSize, 0,
+                     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    }
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -858,20 +862,17 @@ static void sdlResizeVideo()
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
     if (!openGL) {
 #endif
-#if CONFIG_16BIT
-        surface = SDL_CreateSurface(destWidth, destHeight,
-                                    SDL_GetPixelFormatForMasks(16, 0xF800, 0x07E0, 0x001F, 0x0000));
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565,
-            SDL_TEXTUREACCESS_STREAMING,
-            destWidth, destHeight);
-#else
-        surface = SDL_CreateSurface(destWidth, destHeight, SDL_GetPixelFormatForMasks(32,
-            0x00FF0000, 0x0000FF00,
-            0x000000FF, 0x00000000));
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888,
-            SDL_TEXTUREACCESS_STREAMING,
-            destWidth, destHeight);
-#endif
+        if (systemColorDepth == 16)
+        {
+            surface = SDL_CreateSurface(destWidth, destHeight, SDL_GetPixelFormatForMasks(16, 0xF800, 0x07E0, 0x001F, 0x0000));
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, destWidth, destHeight);
+        } else if (systemColorDepth == 24) {
+            surface = SDL_CreateSurface(destWidth, destHeight, SDL_GetPixelFormatForMasks(24, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000));
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, destWidth, destHeight);
+        } else {
+            surface = SDL_CreateSurface(destWidth, destHeight, SDL_GetPixelFormatForMasks(32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0x00000000));
+            texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, destWidth, destHeight);
+        }
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
     }
 #endif
@@ -895,6 +896,7 @@ void sdlInitVideo()
     int window_width, window_height, render_width, render_height;
     bool makes_sense = false;
     SDL_RendererLogicalPresentation representation;
+    uint32_t rmask, gmask, bmask;
 
     filter_enlarge = getFilterEnlargeFactor(filter);
 
@@ -948,30 +950,48 @@ void sdlInitVideo()
         exit(-1);
     }
 
-    uint32_t rmask, gmask, bmask;
+#ifdef CONFIG_16BIT
+    systemColorDepth = 16;
+    srcPitch = sizeX * 2 + 4;
+#else
+    if (openGL)
+    {
+        systemColorDepth = 16;
+        srcPitch = sizeX * 2 + 4;
+    } else {
+        systemColorDepth = 32;
+        srcPitch = sizeX * 4 + 4;
+    }
+#endif
 
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
     if (openGL) {
-#if CONFIG_16BIT
-        rmask = 0x0000F800;
-        gmask = 0x000007E0;
-        bmask = 0x0000001F;
-#else
-        rmask = 0xFF000000;
-        gmask = 0x00FF0000;
-        bmask = 0x0000FF00;
-#endif
+        if (systemColorDepth == 16)
+        {
+            rmask = 0x0000F800;
+            gmask = 0x000007E0;
+            bmask = 0x0000001F;
+        } else if (systemColorDepth == 24) {
+            rmask = 0x00FF0000;
+            gmask = 0x0000FF00;
+            bmask = 0x000000FF;
+        } else {
+            rmask = 0xFF000000;
+            gmask = 0x00FF0000;
+            bmask = 0x0000FF00;
+        }
     } else {
 #endif
-#if CONFIG_16BIT
-        rmask = 0x0000F800;
-        gmask = 0x000007E0;
-        bmask = 0x0000001F;
-#else
-        rmask = 0x00FF0000;
-        gmask = 0x0000FF00;
-        bmask = 0x000000FF;
-#endif
+        if (systemColorDepth == 16)
+        {
+            rmask = 0x0000F800;
+            gmask = 0x000007E0;
+            bmask = 0x0000001F;
+        } else {
+            rmask = 0x00FF0000;
+            gmask = 0x0000FF00;
+            bmask = 0x000000FF;
+        }
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
     }
 #endif
@@ -985,24 +1005,15 @@ void sdlInitVideo()
     //  originally 3, 11, 19 -> 27, 19, 11
 
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
-#if !CONFIG_16BIT
     if (openGL) {
-        // Align to BGRA instead of ABGR
-        systemRedShift += 8;
-        systemGreenShift += 8;
-        systemBlueShift += 8;
+        if (systemColorDepth == 32)
+        {
+            // Align to BGRA instead of ABGR
+            systemRedShift += 8;
+            systemGreenShift += 8;
+            systemBlueShift += 8;
+        }
     }
-#endif
-#endif
-
-#ifdef CONFIG_16BIT
-    systemColorDepth = 16;
-
-    srcPitch = sizeX * 2 + 4;
-#else
-    systemColorDepth = 32;
-
-    srcPitch = sizeX * 4 + 4;
 #endif
 
 #if !defined(CONFIG_IDF_TARGET) && !defined(NO_OPENGL)
