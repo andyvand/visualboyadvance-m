@@ -1003,7 +1003,7 @@ void sdlInitVideo()
 #else
         if (openGL)
         {
-            systemColorDepth = 24;
+            systemColorDepth = 16;
             srcPitch = sizeX * (systemColorDepth >> 3);
         } else {
             systemColorDepth = 32;
