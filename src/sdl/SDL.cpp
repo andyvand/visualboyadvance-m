@@ -966,7 +966,7 @@ void sdlInitVideo()
     if (userColorDepth != 0)
     {
         systemColorDepth = userColorDepth;
-        
+
         switch (systemColorDepth)
         {
             case  8:
