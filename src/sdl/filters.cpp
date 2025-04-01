@@ -88,6 +88,7 @@ uint8_t sdlStretcher[16384];
     sdlStretcher[sdlStretcherPos++] = 0x03;
 
 #define SDL_STOREB                          \
+    sdlStretcher[sdlStretcherPos++] = 0x66; \
     sdlStretcher[sdlStretcherPos++] = 0x89; \
     sdlStretcher[sdlStretcherPos++] = 0x07; \
     sdlStretcher[sdlStretcherPos++] = 0x83; \
