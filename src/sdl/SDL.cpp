@@ -2159,6 +2159,9 @@ void systemDrawScreen()
         if (systemColorDepth == 16)
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, destWidth, destHeight,
                 GL_RGB, GL_UNSIGNED_SHORT_5_6_5, screen);
+        else if (systemColorDepth == 24)
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, destWidth, destHeight,
+                GL_RGB, GL_UNSIGNED_BYTE, screen);
         else
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, destWidth, destHeight,
                 //GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, screen);
