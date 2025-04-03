@@ -1109,9 +1109,16 @@ void sdlInitVideo()
     }
 #endif
 
-    systemRedShift = sdlCalculateShift(rmask);
-    systemGreenShift = sdlCalculateShift(gmask);
-    systemBlueShift = sdlCalculateShift(bmask);
+    if (systemColorDepth == 8)
+    {
+        systemRedShift = 3;
+        systemGreenShift = 0;
+        systemBlueShift = -3;
+    } else {
+        systemRedShift = sdlCalculateShift(rmask);
+        systemGreenShift = sdlCalculateShift(gmask);
+        systemBlueShift = sdlCalculateShift(bmask);
+    }
 
     //printf("systemRedShift %d, systemGreenShift %d, systemBlueShift %d\n",
     //   systemRedShift, systemGreenShift, systemBlueShift);
