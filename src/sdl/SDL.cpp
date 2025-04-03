@@ -1113,7 +1113,7 @@ void sdlInitVideo()
     {
         systemRedShift = 3;
         systemGreenShift = 0;
-        systemBlueShift = 0xFD;
+        systemBlueShift = ((uint32_t)-3);
     } else {
         systemRedShift = sdlCalculateShift(rmask);
         systemGreenShift = sdlCalculateShift(gmask);
