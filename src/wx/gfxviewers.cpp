@@ -17,6 +17,20 @@ void utilReadScreenPixels(uint8_t* dest, int w, int h) {
     int sizeX = w;
     int sizeY = h;
     switch (systemColorDepth) {
+        case 8: {
+            uint8_t* p = (uint8_t*)(g_pix + (w + 2));  // skip first black line
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    uint8_t v = *p++;
+
+                    *b++ = ((v & 0xE0) >> 3);    // R
+                    *b++ = (v & 0x1C);  // G
+                    *b++ = ((v & 0x03) << 3);    // B
+                }
+                p++;  // skip black pixel for filters
+                p++;  // skip black pixel for filters
+            }
+        } break;
         case 16: {
             uint16_t* p = (uint16_t*)(g_pix + (w + 2) * 2);  // skip first black line
             for (int y = 0; y < sizeY; y++) {
