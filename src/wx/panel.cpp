@@ -1454,7 +1454,7 @@ DrawingPanelBase::DrawingPanelBase(int _width, int _height)
 
     if (OPTION(kDispFilter) != config::Filter::kPlugin) {
         scale *= GetFilterScale();
-        systemColorDepth = 24;
+        systemColorDepth = 32;
     }
 
     // Intialize color tables
@@ -2120,10 +2120,10 @@ void BasicDrawingPanel::DrawArea(wxWindowDC& dc)
 
         for (int y = 0; y < std::ceil(height * scale); y++) {
             for (int x = 0; x < std::ceil(width * scale); x++, src++) {
-                *dst++ = ((((*src >> systemRedShift) & 0x1f) << 3) & 0xE0) | ((*src >> systemGreenShift) & 0x1C) | (((*src >> systemBlueShift) >> 3) & 0x3);
+                *dst++ = (uint8_t)(((((*src >> systemRedShift) & 0x1f) << 3) & 0xE0) | ((*src >> systemGreenShift) & 0x1C) | (((*src >> systemBlueShift) >> 3) & 0x3));
             }
 
-            src += 2; // skip rhs border
+            src += 2;
         }
     } else if (out_16) {
         // scaled by filters, top/right borders, transform to 24-bit
@@ -2315,7 +2315,7 @@ void GLDrawingPanel::DrawingPanelInit()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     bilinear ? GL_LINEAR : GL_NEAREST);
 
-#define int_fmt out_8 ? GL_RGB : out_16 ? GL_RGB5 : GL_RGB
+#define int_fmt out_16 ? GL_RGB5 : GL_RGB
 #define tex_fmt out_8  ? GL_RGB : \
                 out_16 ? GL_BGRA : \
                 out_24 ? GL_RGB : GL_RGBA, \
@@ -2457,7 +2457,7 @@ void GLDrawingPanel::DrawArea(wxWindowDC& dc)
         DrawingPanelInit();
 
     if (todraw) {
-        int rowlen = std::ceil(width * scale) + (out_8 ? 1 : out_16 ? 2 : out_24 ? 0 : 1);
+        int rowlen = std::ceil(width * scale) + (out_8 ? 2 : out_16 ? 2 : out_24 ? 0 : 1);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, rowlen);
 #if wxBYTE_ORDER == wxBIG_ENDIAN
 
@@ -2467,7 +2467,7 @@ void GLDrawingPanel::DrawArea(wxWindowDC& dc)
 
 #endif
         glTexImage2D(GL_TEXTURE_2D, 0, int_fmt, std::ceil(width * scale), (int)std::ceil(height * scale),
-            0, tex_fmt, todraw + (int)std::ceil(rowlen * (systemColorDepth >> 3) * scale));
+                     0, tex_fmt, todraw + (int)std::ceil(rowlen * (systemColorDepth >> 3) * scale));
         glCallList(vlist);
     } else
         glClear(GL_COLOR_BUFFER_BIT);
