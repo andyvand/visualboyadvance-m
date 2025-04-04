@@ -1639,7 +1639,7 @@ private:
                 if (systemColorDepth == 16)
                     SmartIB(src_, instride, width_, procy, height_);
                 else
-                    if (systemColorDepth != 8)
+                    if ((systemColorDepth != 8) && (systemColorDepth != 24))
                         SmartIB32(src_, instride, width_, procy, height_);
                 break;
 
@@ -1648,7 +1648,7 @@ private:
                 if (systemColorDepth == 16)
                     MotionBlurIB(src_, instride, width_, procy, height_);
                 else
-                    if (systemColorDepth != 8)
+                    if ((systemColorDepth != 8) && (systemColorDepth != 24))
                         MotionBlurIB32(src_, instride, width_, procy, height_);
                 break;
 
@@ -2130,15 +2130,30 @@ void BasicDrawingPanel::DrawArea(wxWindowDC& dc)
         im = new wxImage(std::ceil(width * scale), std::ceil(height * scale), false);
         uint16_t* src = (uint16_t*)todraw + (int)std::ceil((width + 2) * scale); // skip top border
         uint8_t* dst = im->GetData();
-
+        
         for (int y = 0; y < std::ceil(height * scale); y++) {
             for (int x = 0; x < std::ceil(width * scale); x++, src++) {
                 *dst++ = ((*src >> systemRedShift) & 0x1f) << 3;
                 *dst++ = ((*src >> systemGreenShift) & 0x1f) << 3;
                 *dst++ = ((*src >> systemBlueShift) & 0x1f) << 3;
             }
-
+            
             src += 2; // skip rhs border
+        }
+    } else if (out_24) {
+        // not scaled by filters, top/right borders, transform to 24-bit
+        im = new wxImage(std::ceil(width * scale), std::ceil(height * scale), false);
+        uint8_t* src = (uint8_t*)todraw + (int)std::ceil((width + 1) * scale); // skip top border
+        uint8_t* dst = im->GetData();
+
+        for (int y = 0; y < std::ceil(height * scale); y++) {
+            for (int x = 0; x < std::ceil(width * scale); x++, src++) {
+                *dst++ = *src++ >> (systemRedShift - 3);
+                *dst++ = *src++ >> (systemGreenShift - 3);
+                *dst++ = *src++ >> (systemBlueShift - 3);
+            }
+
+            ++src; // skip rhs border
         }
     } else if (OPTION(kDispFilter) != config::Filter::kNone) {
         // scaled by filters, top/right borders, transform to 24-bit
@@ -2442,7 +2457,7 @@ void GLDrawingPanel::DrawArea(wxWindowDC& dc)
         DrawingPanelInit();
 
     if (todraw) {
-        int rowlen = std::ceil(width * scale) + (out_16 ? 2 : 1);
+        int rowlen = std::ceil(width * scale) + (out_16 ? 2 : out_24 ? 0 : 1);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, rowlen);
 #if wxBYTE_ORDER == wxBIG_ENDIAN
 
