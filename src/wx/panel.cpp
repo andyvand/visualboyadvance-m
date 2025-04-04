@@ -1573,7 +1573,7 @@ public:
         const int procy = height_ * threadno_ / nthreads_;
         height_ = height_ * (threadno_ + 1) / nthreads_ - procy;
         const int inbpp = systemColorDepth >> 3;
-        const int inrb = systemColorDepth == 8 ? 4 : systemColorDepth == 16   ? 2
+        const int inrb = systemColorDepth == 8 ? 2 : systemColorDepth == 16   ? 2
                          : systemColorDepth == 24 ? 0
                                                   : 1;
         const int instride = (width_ + inrb) * inbpp;
