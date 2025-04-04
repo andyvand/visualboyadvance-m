@@ -1467,7 +1467,7 @@ DrawingPanelBase::DrawingPanelBase(int _width, int _height)
 #else
         systemRedShift = 27;
         systemGreenShift = 11;
-        systemBlueShift = 19;
+        systemBlueShift = 3;
         RGB_LOW_BITS_MASK = 0x00010101;
 #endif
     } else if (systemColorDepth == 32) {
