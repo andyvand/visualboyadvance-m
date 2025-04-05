@@ -2468,8 +2468,8 @@ void GLDrawingPanel::DrawArea(wxWindowDC& dc)
             glPixelStorei(GL_UNPACK_SWAP_BYTES, GL_TRUE);
 
 #endif
-        glTexImage2D(GL_TEXTURE_2D, 0, int_fmt, std::ceil(width * scale), (int)std::ceil(height * scale),
-                     0, tex_fmt, todraw + (int)std::ceil(rowlen * (systemColorDepth >> 3) * scale));
+        glTexImage2D(GL_TEXTURE_2D, 0, int_fmt, (int)std::ceil(width * scale), (int)std::ceil(height * scale),
+                     0, tex_fmt, todraw + (int)std::ceil(rowlen * ((systemColorDepth >> 3) * scale)));
         glCallList(vlist);
     } else
         glClear(GL_COLOR_BUFFER_BIT);
