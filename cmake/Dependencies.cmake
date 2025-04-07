@@ -11,7 +11,14 @@ if(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
     set(OpenGL_GL_PREFERENCE LEGACY)
 endif()
 
+if(NOT DISABLE_OPENGL)
 find_package(OpenGL)
+
+if(NOT OpenGL_FOUND)
+   set(CMAKE_C_FLAGS "-DNO_OPENGL -DNO_OGL ${CMAKE_C_FLAGS}")
+   set(CMAKE_CXX_FLAGS "-DNO_OPENGL -DNO_OGL ${CMAKE_CXX_FLAGS}")
+endif()
+endif()
 
 if(ENABLE_SDL3)
     find_package(SDL3 REQUIRED)
