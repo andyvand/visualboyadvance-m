@@ -80,6 +80,7 @@ static constexpr size_t kNbRenderMethods = static_cast<size_t>(RenderMethod::kLa
 // Values for kAudioApi.
 enum class AudioApi {
     kOpenAL,
+    kSDL,
 #if defined(__WXMSW__)
     kDirectSound,
 #endif  // __WXMSW__
