@@ -20,6 +20,12 @@
 #define stat _stat
 #define mkdir(X,Y) (_mkdir(X))
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 // from: https://www.linuxquestions.org/questions/programming-9/porting-to-win32-429334/
 #ifndef S_ISDIR
     #define S_ISDIR(mode)  (((mode) & _S_IFMT) == _S_IFDIR)
@@ -138,6 +144,8 @@ int rewindTimer = 0;
 int showSpeed;
 int showSpeedTransparent;
 
+int userColorDepth = 0;
+
 const char* preparedCheatCodes[MAX_CHEATS];
 
 // allow up to 100 IPS/UPS/PPF patches given on commandline
@@ -168,6 +176,7 @@ struct option argOptions[] = {
 	{ "capture-format", required_argument, 0, OPT_CAPTURE_FORMAT },
 	{ "cheat", required_argument, 0, OPT_CHEAT },
 	{ "cheats-enabled", no_argument, &coreOptions.cheatsEnabled, 1 },
+	{ "color-depth", required_argument, 0, 'z'},
 	{ "color-option", no_argument, 0, OPT_GB_COLOR_OPTION },
 	{ "config", required_argument, 0, 'c' },
 	{ "cpu-disable-sfx", no_argument, &coreOptions.cpuDisableSfx, 1 },
@@ -237,7 +246,6 @@ struct option argOptions[] = {
 	{ "use-bios", no_argument, &coreOptions.useBios, 1 },
 	{ "verbose", required_argument, 0, 'v' },
 	{ "win-gb-printer-enabled", no_argument, &coreOptions.gbPrinterEnabled, 1 },
-
 
 	{ NULL, no_argument, NULL, 0 }
 };
@@ -457,7 +465,7 @@ const char* FindConfigFile(const char *name)
 		mkdir(fullDir, 0755);
 
 	if (fullDir) {
-		sprintf(path, "%s%c%s", fullDir, kFileSep, name);
+		snprintf(path, sizeof(path), "%s%c%s", fullDir, kFileSep, name);
 		if (FileExists(path))
 		{
 			return path;
@@ -467,7 +475,7 @@ const char* FindConfigFile(const char *name)
 #ifdef _WIN32
 	char *home = getenv("USERPROFILE");
 	if (home != NULL) {
-		sprintf(path, "%s%c%s", home, kFileSep, name);
+		snprintf(path, sizeof(path), "%s%c%s", home, kFileSep, name);
 		if (FileExists(path))
 		{
 			return path;
@@ -484,10 +492,10 @@ const char* FindConfigFile(const char *name)
 			char *tok = strtok(buffer, PATH_SEP);
 
 			while (tok) {
-				sprintf(env_path, "%s%c%s", tok, kFileSep, EXE_NAME);
+				snprintf(env_path, 4096, "%s%c%s", tok, kFileSep, EXE_NAME);
 				if (FileExists(env_path)) {
 					static char path2[2048];
-					sprintf(path2, "%s%c%s", tok, kFileSep, name);
+					snprintf(path2, sizeof(path2), "%s%c%s", tok, kFileSep, name);
 					if (FileExists(path2)) {
 						return path2;
 					}
@@ -498,11 +506,11 @@ const char* FindConfigFile(const char *name)
 	}
 	else {
 		// executable is relative to some directory
-		strcpy(buffer, arg0);
+		strncpy(buffer, arg0, sizeof(buffer));
 		char *p = strrchr(buffer, kFileSep);
 		if (p) {
 			*p = 0;
-			sprintf(path, "%s%c%s", buffer, kFileSep, name);
+			snprintf(path, sizeof(path), "%s%c%s", buffer, kFileSep, name);
 			if (FileExists(path))
 			{
 				return path;
@@ -510,13 +518,13 @@ const char* FindConfigFile(const char *name)
 		}
 	}
 #else // ! _WIN32
-	sprintf(path, "%s%c%s", PKGDATADIR, kFileSep, name);
+	snprintf(path, sizeof(path), "%s%c%s", PKGDATADIR, kFileSep, name);
 	if (FileExists(path))
 	{
 		return path;
 	}
 
-	sprintf(path, "%s%c%s", SYSCONF_INSTALL_DIR, kFileSep, name);
+	snprintf(path, sizeof(path), "%s%c%s", SYSCONF_INSTALL_DIR, kFileSep, name);
 	if (FileExists(path))
 	{
 		return path;
@@ -626,7 +634,7 @@ static char *xstrdup(const char *s)
                 return NULL;
         t = (char *)malloc(strlen(s) + 1);
         if (t) {
-                strcpy(t, s);
+                strncpy(t, s, strlen(s) + 1);
         }
         return t;
 }
@@ -652,7 +660,7 @@ int ReadOpts(int argc, char ** argv)
 		  {
 			  //char* cpy;
 			  //cpy = (char *)malloc(1 + strlen(optarg));
-			  //strcpy(cpy, optarg);
+			  //strncpy(cpy, optarg, strlen(optarg) + 1);
 			  //preparedCheatCodes[preparedCheats++] = cpy;
 			std::string cpy = optarg;
 			preparedCheatCodes[preparedCheats++] = cpy.c_str();
@@ -705,7 +713,7 @@ int ReadOpts(int argc, char ** argv)
 			}
 			else {
 				patchNames[patchNum] = (char *)malloc(1 + strlen(optarg));
-				strcpy(patchNames[patchNum], optarg);
+				strncpy(patchNames[patchNum], optarg, strlen(optarg) + 1);
 				patchNum++;
 			}
 			break;
@@ -744,6 +752,21 @@ int ReadOpts(int argc, char ** argv)
 			break;
 		case 'F':
 			fullScreen = 1;
+			break;
+		case 'z':
+			if (optarg != NULL) {
+				userColorDepth = atoi(optarg);
+
+				if ((userColorDepth != 8) && (userColorDepth != 16) && (userColorDepth != 24) && (userColorDepth != 32))
+				{
+					fprintf(stderr, "Wrong color depth (%d bit)\n", userColorDepth);
+					userColorDepth = 0;
+				} else {
+					log("Set color depth to %d bit\n", userColorDepth);
+				}
+			} else {
+				userColorDepth = 0;
+			}
 			break;
 		case 'f':
 			if (optarg) {

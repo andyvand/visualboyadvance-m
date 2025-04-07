@@ -20,6 +20,12 @@
 
 #include "core/base/internal/memgzio.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #ifndef local
 #define local static
 #endif
@@ -213,7 +219,7 @@ local int memPrintf(MEMFILE *f, const char *format, ...)
         int len;
 
         va_start(list, format);
-        len = vsprintf(buffer, format, list);
+        len = vsnprintf(buffer, sizeof(buffer), format, list);
         va_end(list);
 
         return (int)memWrite(buffer, 1, len, f);

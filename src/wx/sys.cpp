@@ -4,7 +4,12 @@
 #include <wx/generic/prntdlgg.h>
 #include <wx/print.h>
 #include <wx/printdlg.h>
+
+#ifdef ENABLE_SDL3
+#include <SDL3/SDL.h>
+#else
 #include <SDL.h>
+#endif
 
 #include "core/base/image_util.h"
 #include "core/gb/gbGlobals.h"
@@ -16,6 +21,10 @@
 #include "wx/config/option-proxy.h"
 #include "wx/wxvbam.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define vsnprintf vsprintf_s
+#endif
+
 // These should probably be in vbamcore
 int systemVerbose;
 int systemFrameSkip;
@@ -24,6 +33,7 @@ int systemRedShift;
 int systemGreenShift;
 int systemBlueShift;
 int systemColorDepth;
+uint8_t  systemColorMap8[0x10000];
 uint16_t systemColorMap16[0x10000];
 uint32_t systemColorMap32[0x10000];
 #define gs555(x) (x | (x << 5) | (x << 10))

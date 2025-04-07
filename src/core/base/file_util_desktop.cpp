@@ -16,6 +16,12 @@
 #define strcasecmp _stricmp
 #endif  // defined(_MSC_VER)
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #define MAX_CART_SIZE 0x8000000  // 128MB
 
 namespace {
@@ -51,7 +57,7 @@ fex_t* scanArchive(const char* file, bool (*accept)(const char*), char (&buffer)
         strncpy(buffer, fex_name(fe), sizeof buffer);
         buffer[sizeof buffer - 1] = '\0';
 
-        utilStripDoubleExtension(buffer, buffer);
+        utilStripDoubleExtension(buffer, buffer, sizeof(buffer));
 
         if (accept(buffer)) {
             found = true;
@@ -153,9 +159,9 @@ IMAGE_TYPE utilFindType(const char* file) {
     return utilFindType(file, buffer);
 }
 
-void utilStripDoubleExtension(const char* file, char* buffer) {
+void utilStripDoubleExtension(const char* file, char* buffer, size_t len) {
     if (buffer != file)  // allows conversion in place
-        strcpy(buffer, file);
+        strncpy(buffer, file, len);
 
     if (utilIsGzipFile(file)) {
         char* p = strrchr(buffer, '.');

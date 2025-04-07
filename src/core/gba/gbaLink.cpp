@@ -11,6 +11,12 @@
 
 #include <Windows.h>
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 #else  // !defined(_WIN32)
 
 #include <errno.h>
@@ -60,7 +66,7 @@ const char* MakeInstanceFilename(const char* Input)
 
     result = (char*)malloc(strlen(Input) + 3);
     char* p = strrchr((char*)Input, '.');
-    sprintf(result, "%.*s-%d.%s", (int)(p - Input), Input, vbaid + 1, p + 1);
+    snprintf(result, strlen(Input) + 3, "%.*s-%d.%s", (int)(p - Input), Input, vbaid + 1, p + 1);
     return result;
 }
 
@@ -852,7 +858,7 @@ void CableServer::Recv(void)
             }
             if (inbuffer[1] == -32) {
                 char message[30];
-                sprintf(message, _("Player %d disconnected."), i + 2);
+                snprintf(message, sizeof(message), _("Player %d disconnected."), i + 2);
                 systemScreenMessage(message);
                 outbuffer[0] = 4;
                 outbuffer[1] = -32;
@@ -916,7 +922,7 @@ bool CableServer::RecvGB(void)
 
             if (inbuffer[1] == -32) {
                 char message[30];
-                sprintf(message, _("Player %d disconnected."), i + 2);
+                snprintf(message, sizeof(message), _("Player %d disconnected."), i + 2);
                 systemScreenMessage(message);
                 for (i = 1; i < lanlink.numslaves; i++) {
                     tcpsocket[i].disconnect();
@@ -1570,7 +1576,7 @@ void RFUServer::Recv(void)
             sf::Socket::Status status = tcpsocket[i + 1].receive(packet);
             if (status == sf::Socket::Status::Disconnected) {
                 char message[30];
-                sprintf(message, _("Player %d disconnected."), i + 1);
+                snprintf(message, sizeof(message), _("Player %d disconnected."), i + 1);
                 systemScreenMessage(message);
                 //tcpsocket[i + 1].disconnect();
                 //CloseLink();
@@ -2902,7 +2908,7 @@ static void UpdateCableIPC(int)
                     if (f < (1 << transfer_direction) - 1)
                         linkmem->numgbas = transfer_direction - 1;
                     char message[30];
-                    sprintf(message, _("Player %d disconnected."), transfer_direction - 1);
+                    snprintf(message, sizeof(message), _("Player %d disconnected."), transfer_direction - 1);
                     systemScreenMessage(message);
                 }
                 transfer_direction = linkmem->trgbas + 1;

@@ -4,6 +4,12 @@
 
 #include "core/gb/gbGlobals.h"
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 typedef struct {
     uint8_t mask;
     uint8_t value;
@@ -137,7 +143,7 @@ int gbDis(char* buffer, uint16_t address)
     char* p = buffer;
     uint16_t instr = 1;
     uint16_t addr = address;
-    sprintf(p, "%04x        ", address);
+    snprintf(p, 12, "%04x        ", address);
     p += 12;
 
     uint8_t opcode = GB_READ(address);
@@ -183,7 +189,7 @@ int gbDis(char* buffer, uint16_t address)
                 disp = GB_READ(address);
                 if (disp >= 0)
                     *p++ = '+';
-                p += sprintf(p, "%d", disp);
+                p += snprintf(p, 3, "%d", disp);
                 instr++;
                 break;
             case 'd':

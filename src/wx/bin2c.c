@@ -41,6 +41,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define WBUF_SIZE BUF_SIZE * sizeof(wchar_t)
 #define MSG_SIZE  256
 
+#if __STDC_WANT_SECURE_LIB__
+#define snprintf sprintf_s
+#define strncpy(a,b,c) strcpy_s(a,c,b)
+#define strncat(a,b,c) strcat_s(a,c,b)
+#endif
+
 const char* version    = "0.3";
 
 const char* msg_prefix = "bin2c: ";
@@ -48,7 +54,7 @@ const char* msg_prefix = "bin2c: ";
 void format_perror(const char* fmt, va_list args) {
     static char error_str[MSG_SIZE];
     static char fmt_str[MSG_SIZE];
-    strcpy(fmt_str, msg_prefix);
+    strncpy(fmt_str, msg_prefix, sizeof(fmt_str));
     strncat(fmt_str, fmt, MSG_SIZE - strlen(msg_prefix));
     vsnprintf(error_str, MSG_SIZE, fmt_str, args);
     perror(error_str);
@@ -151,10 +157,10 @@ void die_usage(const char* fmt, ...) {
     static char fmt_str[MSG_SIZE];
     va_list args;
     va_start(args, fmt);
-    strcpy(fmt_str, msg_prefix);
+    strncpy(fmt_str, msg_prefix, sizeof(fmt_str));
     // Need to reserve 1 byte for the newline.
     strncat(fmt_str, fmt, MSG_SIZE - strlen(msg_prefix) - 1);
-    strcat(fmt_str, "\n");
+    strncat(fmt_str, "\n", sizeof(fmt_str));
     vfprintf(stderr, fmt_str, args);
     va_end(args);
     usage(1);
